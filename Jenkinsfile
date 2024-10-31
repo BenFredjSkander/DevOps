@@ -51,15 +51,14 @@ pipeline {
         }
 
 
-      stage('Build docker images'){
+        stage('Build docker images'){
             steps{
                 script{
                     withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
                         sh "docker build -t ${dockerImageTag}:latest ."
-                        }
+                    }
                         // to delete old images with none tag
                         // sh "docker images -a | grep none | awk '{ print \$3}' | xargs docker rmi --force"
-                    }
                 }
             }
         }
