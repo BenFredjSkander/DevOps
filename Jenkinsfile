@@ -1,9 +1,11 @@
 pipeline {
     agent any
+    def projectDockerImage
 
     environment {
-       dockerImageTag = "skander007/devops-project"
-       SCANNER_HOME = tool 'sonar-scanner'
+        dockerImageName = "devops-project"
+        dockerUsername = "skander007"
+        SCANNER_HOME = tool 'sonar-scanner'
     }
 
     tools {
@@ -25,17 +27,10 @@ pipeline {
             }
         }
 
-        stage('Trivy File Scan') {
-            steps {
-                sh "trivy filesystem --format table -o file-report-trivy.html ."
-
-            }
-        }
-
         stage('Sonarqube Analysis'){
             steps{
                 withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'sonar') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=DevopsProject -Dsonar.java.binaries=**/classes/**'''
+                    sh '''  mvn sonar:sonar -Dsonar.projectKey=DevopsProject'''
             }}
         }
 
@@ -54,6 +49,8 @@ pipeline {
                 script{
                     withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
                         sh "docker build -t ${dockerImageTag}:latest ."
+                        projectDockerImage = docker.build dockerUsername+"/"+dockerImageName + ":latest", " ."
+
                     }
                         // to delete old images with none tag
                         // sh "docker images -a | grep none | awk '{ print \$3}' | xargs docker rmi --force"
@@ -64,7 +61,7 @@ pipeline {
         stage('Docker image scan'){
             steps{
                 script{
-                    sh "trivy image --format table -o file-report-trivy.html ${dockerImageTag}:latest"
+                    sh '''trivy image --skip-db-update --severity MEDIUM,HIGH,CRITICAL --format template --template "@/usr/local/share/trivy/templates/html.tpl" -o docker-report-trivy.html ${dockerUsername}/${dockerImageName}:latest'''
                 }
             }
         }
@@ -73,10 +70,41 @@ pipeline {
             steps{
                 script{
                     withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
-                        sh "docker push ${dockerImageTag}:latest"
+                        projectDockerImage.push()
                     }
                 }
             }
         }
     }
+
+        post{
+            always{
+                script{
+                        def pipelineStatus = currentBuild.result ?: "UNKNOWN"
+                        def bannerColor = pipelineStatus.toUpperCase() == "SUCCESS" ? "#28a745" : "#dc3545"
+                        def jobName = env.JOB_NAME
+                        def buildNumber = env.BUILD_NUMBER
+                        def htmlContent = """
+                            <html>
+                                <body>
+                                    <div style="padding: 10px; color: white; background-color: ${bannerColor}; text-align: center; font-size: 24px;">
+                                        ${pipelineStatus}
+                                    </div>
+                                    <p>Hello,</p>
+                                    <p>The Jenkins job has completed with status: <strong>${pipelineStatus}</strong>.</p>
+                                    <p>Check the details on your Jenkins server.</p>
+                                </body>
+                            </html>
+                        """
+
+                        emailext (
+                            subject: "${jobName} - ${buildNumber} : ${pipelineStatus}",
+                            body: htmlContent,
+                            mimeType: 'text/html',
+                            to: PERSONAL_EMAIL,
+                            attachmentsPattern: '*-report-trivy.html'
+                        )
+                }
+            }
+        }
 }
