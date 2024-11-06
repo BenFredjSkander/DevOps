@@ -27,21 +27,21 @@ pipeline {
             }
         }
 
-        stage('Sonarqube Analysis'){
-            steps{
-                withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'sonar') {
-                    sh '''  mvn sonar:sonar -Dsonar.projectKey=DevopsProject'''
-            }}
-        }
-
-
-        stage('Nexus publish'){
-            steps{
-                withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
-                    sh 'mvn deploy'
-                }
-            }
-        }
+//         stage('Sonarqube Analysis'){
+//             steps{
+//                 withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'sonar') {
+//                     sh '''  mvn sonar:sonar -Dsonar.projectKey=DevopsProject'''
+//             }}
+//         }
+//
+//
+//         stage('Nexus publish'){
+//             steps{
+//                 withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+//                     sh 'mvn deploy'
+//                 }
+//             }
+//         }
 
 
         stage('Build docker images'){
@@ -72,6 +72,23 @@ pipeline {
                     withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
                         projectDockerImage.push()
                     }
+                }
+            }
+        }
+
+        stage('Run docker compose stack'){
+            steps{
+                script{
+                    sh "docker compose up -d"
+                }
+            }
+        }
+
+        stage('Monitor app'){
+            steps{
+                script{
+                    sh "docker container start prometheus"
+                    sh "docker container start grafana"
                 }
             }
         }
