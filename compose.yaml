@@ -40,7 +40,10 @@ services:
       - "9104:9104"
     volumes:
       - ./config.my-cnf:/cfg/config.my-cnf
-
+    command:
+      - --config.my-cnf=/cfg/config.my-cnf
+    depends_on:
+      - db
 volumes:
   devops_db_data:
 
