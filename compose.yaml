@@ -33,6 +33,13 @@ services:
       timeout: 5s
       retries: 5
 
+  exporter:
+    image: prom/mysqld-exporter
+    container_name: exporter
+    ports:
+      - "9104:9104"
+    volumes:
+      - ./config.my-cnf:/cfg/config.my-cnf
 
 volumes:
   devops_db_data:
