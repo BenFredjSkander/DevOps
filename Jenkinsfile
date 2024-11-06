@@ -1,3 +1,4 @@
+def projectDockerImage
 pipeline {
     agent any
 
@@ -5,7 +6,6 @@ pipeline {
         dockerImageName = "devops-project"
         dockerUsername = "skander007"
         SCANNER_HOME = tool 'sonar-scanner'
-        projectDockerImage = ''
     }
 
     tools {
