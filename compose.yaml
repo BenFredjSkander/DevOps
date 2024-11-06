@@ -7,7 +7,7 @@ services:
     env_file:
       - app.env
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8089/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8089/tpfoyer/actuator/health" ]
       interval: 30s
       retries: 3
       start_period: 10s
