@@ -1,7 +1,7 @@
 services:
   server:
     image: skander007/devops-project:latest
-    container_name: server
+    container_name: server-spring
     ports:
       - "8089:8089"
     env_file:
@@ -19,6 +19,7 @@ services:
   db:
     image: mysql:8.0.38
     restart: always
+    container_name: db
     volumes:
       - devops_db_data:/var/lib/mysql
       - ./config.my-cnf:/cfg/config.my-cnf
