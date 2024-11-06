@@ -21,6 +21,7 @@ services:
     restart: always
     volumes:
       - devops_db_data:/var/lib/mysql
+      - ./config.my-cnf:/cfg/config.my-cnf
     env_file:
       - db.env
     expose:
