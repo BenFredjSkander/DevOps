@@ -27,21 +27,21 @@ pipeline {
             }
         }
 
-//         stage('Sonarqube Analysis'){
-//             steps{
-//                 withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'sonar') {
-//                     sh '''  mvn sonar:sonar -Dsonar.projectKey=DevopsProject'''
-//             }}
-//         }
-//
-//
-//         stage('Nexus publish'){
-//             steps{
-//                 withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
-//                     sh 'mvn deploy'
-//                 }
-//             }
-//         }
+        stage('Sonarqube Analysis'){
+            steps{
+                withSonarQubeEnv(credentialsId: 'sonar-token', installationName: 'sonar') {
+                    sh '''  mvn sonar:sonar -Dsonar.projectKey=DevopsProject'''
+            }}
+        }
+
+
+        stage('Nexus publish'){
+            steps{
+                withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+                    sh 'mvn deploy'
+                }
+            }
+        }
 
 
         stage('Build docker images'){
