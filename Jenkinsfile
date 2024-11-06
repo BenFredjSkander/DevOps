@@ -48,9 +48,7 @@ pipeline {
             steps{
                 script{
                     withDockerRegistry(credentialsId: 'docker-credentials', toolName: 'docker') {
-                        sh "docker build -t ${dockerImageTag}:latest ."
                         projectDockerImage = docker.build dockerUsername+"/"+dockerImageName + ":latest", " ."
-
                     }
                         // to delete old images with none tag
                         // sh "docker images -a | grep none | awk '{ print \$3}' | xargs docker rmi --force"
